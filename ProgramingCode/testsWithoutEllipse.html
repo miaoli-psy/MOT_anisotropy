@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tests</title>
+    <script type="text/JavaScript" src="js/balls.js"></script>
+    <script type="text/JavaScript" src="js/square.js"></script>
+    <script type="text/JavaScript" src="js/randomDots.js"></script>
+    <script type="text/JavaScript" src="js/causality.js"></script>
+    <script type="text/JavaScript" src="js/sphere.js"></script>
+    <script type="text/JavaScript" src="js/mot.js"></script>
+   
+    <script type="text/JavaScript" src="js/KanizsaSquare.js"></script>
+    <script type="text/javascript" src="js/Form.js"></script>
+
+    <link rel="stylesheet" href="jquery-ui-1.10.3.custom/css/smoothness/jquery-ui-1.10.3.custom.css" />
+    <link rel="shortcut icon" href="img/favicon.ico">
+
+    <script src="jquery-ui-1.10.3.custom/js/jquery-1.9.1.js"></script>
+    <script src="jquery-ui-1.10.3.custom/js/jquery-ui-1.10.3.custom.min.js"></script>
+    <script src="js/excanvas.js"></script>
+    <script>
+        $(function() {
+            $( "#slider" ).slider({
+                value: 33
+            });
+        });
+    </script>
+
+
+    <link rel="stylesheet" href="css/main.css" type="text/css" />
+</head>
+<body onload="init();">
+
+<div id="main_div" align="center" style="border:1px solid #FFFFFF;">
+    <div id="menu_div" align="left" style="border:1px solid #FFFFFF; float:left;">
+        <nav id="main_nav">
+            <ul id="menu_list">
+                <li><a id="balls_link" href="javascript:startNewTest(false,'balls');">Balls</a></li>
+                <li><a id="square_link" href="javascript:startNewTest(false,'square');">Moving square</a></li>
+                <li><a id="randomDots_link" href="javascript:startNewTest(false,'randomDots');">Random dots</a></li>
+                <li><a id="causality_link" href="javascript:startNewTest(false,'causality');">Causality</a></li>
+                <li><a id="sphere_link" href="javascript:startNewTest(false,'sphere');">Sphere</a></li>
+                <li><a id="mot_link" href="javascript:startNewTest(false,'mot');">MOT</a></li>
+                <li><a id="mot_ellipse_link" href="javascript:startNewTest(false,'mot');">MOT ellipse</a></li>
+                <li><a id="Kanizsa_square_link" href="javascript:startNewTest(false,'Kanizsa_Square');">Kanizsa Square</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <div id="form_div" align="center" style="border:1px solid #000000;">
+        <form id="form" style="border:1px solid #FFFFFF;">
+            Your ID: <input id="f_id" type="text" name="form_id" /><br>
+            Your Gender:
+            <select id="f_gender">
+                <option>Male</option>
+                <option>Female</option>
+            </select><br>
+            Your age: <input id="f_age" type="text" name="form_age" min="0" max="150" /><br>
+            <button type="button" id="submit" onclick="submit_function();">Submit!</button>
+        </form>
+    </div>
+
+    <div id="canvas_wrapper" align="center" >
+        <div id="canvas_div" align="center" style="border:1px solid #FFFFFF;">
+            <canvas id="myCanvas" width="1200" height="800" style="border:1px solid #FFFFFF;">
+                Your browser does not support the HTML5 canvas tag.
+            </canvas>
+        </div>
+
+        <div id="num_clicks" align="left" style='position: absolute; right: 0; top: 0;width: 100px; border:1px solid #FFFFFF;'>
+            <p id="n_cl"></p>
+            <p id="n_click"></p>
+            <p id="n_cl_info"></p>
+            <p id="pop_up_info"></p>
+        </div>
+
+        <div id="slider_wrapper" width="100" >
+            <div id="slider">
+            </div>
+        </div>
+    </div>
+    <footer style="text-align: left;">
+        <p class="footer_p">&#169 KULeuven <span id="DEMO_SHOW"></span></p>
+    </footer>
+</div>
+</body>
+</html>
