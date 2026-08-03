@@ -84,7 +84,7 @@ vignettes/*.pdf
 # myfolders
 Data/
 docs/
-ProgrammingCode/
+ProgramingCode/
 psychopy/
 .idea/
 
