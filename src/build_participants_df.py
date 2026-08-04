@@ -27,7 +27,7 @@ PICK_RE = re.compile(r"(\d+)=(imp|nimp)")
 
 # for the full geometry table; crowding_axis is the axis along which two dots
 # were free to approach each other.
-CROWDING_AXIS = {"horizontal": "radial", "vertical": "tangential"}
+CROWDING_AXIS = {"horizontal": "weak", "vertical": "strong"}
 
 
 def parse_filename(path: Path) -> dict | None:
