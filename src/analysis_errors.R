@@ -3,11 +3,18 @@ library(emmeans)
 library(tidyverse)
 library(mixedpower)
 
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(patchwork)
+library(ggdist)
+
+
 
 setwd("d:/OneDrive/projects/MOT_anisotropy_code/data_clean/")
 
 data <- read.csv("participants_trials.csv")
-data$crowding_axis <- factor(data$crowding_axis, levels = c("tangential", "radial"))  # tangential = reference
+data$crowding_axis <- factor(data$crowding_axis, levels = c("strong", "weak"))  # tangential(strong) = reference
 data$participant <- factor(data$participant)
 
 # age
@@ -94,9 +101,9 @@ data2 <- data_by_participants %>%
 # Cohen's dz = 0.74
 # 19 of 24 
 
-t.test(data2$tangential, data2$radial, paired = TRUE) 
+t.test(data2$strong, data2$weak, paired = TRUE) 
 
-dif <- data2$tangential - data2$radial
+dif <- data2$strong - data2$weak
 mean(dif) / sd(dif)                             
 sum(dif > 0)      
 
@@ -124,4 +131,153 @@ power
 #observed power
 
 lambda <- fixef(m1)["crowding_axis1"] / sqrt(diag(vcov(m1)))["crowding_axis1"]
-pnorm(lambda - 1.96) + pnorm(-lambda - 1.96)     # 0.916
+pnorm(lambda - 1.96) + pnorm(-lambda - 1.96)     # dz = 0.916
+
+
+
+#--------------plots--------------------------
+
+my_plot_theme <- theme(
+  axis.title.x = element_text(color = "black", size = 14, face = "bold", margin = margin(t = 10)),
+  axis.title.y = element_text(color = "black", size = 14, face = "bold", margin = margin(r = 10)),
+  axis.text.x  = element_text(size = 12, face = "bold", color = "black"),
+  axis.text.y  = element_text(size = 12, face = "bold", color = "black"),
+  axis.line    = element_line(colour = "black", linewidth = 0.8),
+  panel.border     = element_blank(),
+  panel.grid.major = element_blank(),
+  panel.grid.minor = element_blank(),
+  panel.background = element_blank(),
+  strip.text       = element_text(size = 12, face = "bold"),
+  legend.title     = element_text(size = 12, face = "bold"),
+  legend.text      = element_text(size = 10),
+  plot.title       = element_text(size = 16, face = "bold"),
+  plot.subtitle    = element_text(size = 12, color = "grey30"),
+  panel.spacing    = unit(1.5, "lines")
+)
+
+zone_cols <- c("weak" = "#1a80bb", "strong" = "#f1a226")
+
+
+# p error rates
+
+p_errors <- ggplot() +
+  
+  geom_line(
+    data = data_by_participants,
+    aes(x = crowding_axis,
+        y = n_errors.mean,
+        group = participant),
+    alpha = 0.15,
+    color = "grey40",
+    linewidth = 0.4
+  ) +
+  
+  geom_point(
+    data = data_by_participants,
+    aes(x = crowding_axis,
+        y = n_errors.mean,
+        color = crowding_axis),
+    alpha = 0.25,
+    size = 2
+  ) +
+  
+  geom_line(
+    data = data_across_participants,
+    aes(x = crowding_axis,
+        y = avg_n_errors,
+        group = 1),
+    color = "black",
+    linewidth = 1,
+    alpha = 0.5
+  ) +
+  
+  geom_point(
+    data = data_across_participants,
+    aes(x = crowding_axis,
+        y = avg_n_errors,
+        color = crowding_axis),
+    size = 4,
+    alpha = 0.8
+  ) +
+  
+  geom_errorbar(
+    data = data_across_participants,
+    aes(x = crowding_axis,
+        ymin = ci_lower,
+        ymax = ci_upper,
+        color = crowding_axis),
+    width = 0.0,
+    linewidth = 1
+  ) +
+  
+  scale_y_continuous(breaks = c(0, 0.5, 1, 1.5, 2), limits = c(-0, 2)) +
+  
+  
+  scale_color_manual(values = zone_cols) +
+  
+  labs(x = "Interference",
+       y = "Errors per trial") +
+  
+  my_plot_theme +
+  
+  theme(legend.position = "none")
+
+p_errors
+
+
+# model-estimated accuracy (emmeans, back-transformed)
+
+emm_df <- as.data.frame(emmeans(m1, ~ crowding_axis, type = "response"))
+
+p_model <- ggplot(data = emm_df,
+                  aes(x = crowding_axis,
+                      y = prob,
+                      color = crowding_axis)) +
+  
+  geom_line(aes(group = 1),
+            color = "black",
+            linewidth = 1,
+            alpha = 0.5) +
+  
+  geom_point(size = 4,
+             alpha = 0.8) +
+  
+  geom_errorbar(
+    aes(ymin = asymp.LCL,
+        ymax = asymp.UCL),
+    width = 0.0,
+    linewidth = 1
+  ) +
+  
+  scale_y_continuous(breaks = c(0.8, 0.85, 0.9, 0.95), limits = c(0.78, 0.95)) +
+  
+  scale_color_manual(values = zone_cols) +
+  
+  labs(x = "Interference",
+       y = "Estimated accuracy") +
+  
+  my_plot_theme +
+  
+  theme(legend.position = "none")
+
+p_model
+
+
+# combine 2
+main_plot <- (p_errors | p_model) +
+  plot_layout(widths = c(1,  1)) +
+  plot_annotation(tag_levels = "A") &
+  theme(plot.tag = element_text(size = 16, face = "bold"))
+
+main_plot
+
+
+ggsave(
+  filename = "error_plot.svg",
+  plot = main_plot,
+  width = 7,
+  height = 3.6,
+  units = "in"
+)
+
+
