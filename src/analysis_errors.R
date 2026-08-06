@@ -91,6 +91,22 @@ sjPlot::tab_model(
 emmeans(m1, ~ crowding_axis, type = "response")
 emmeans(m1, pairwise ~ crowding_axis, type = "response")
 
+# ---- everything on the ERROR scale --------------------------------------
+# the model is fitted to hits out of 5; expected errors = 5 * (1 - p).
+# the transform is monotonic decreasing, so CI bounds swap.
+
+emm_err <- as.data.frame(emmeans(m1, ~ crowding_axis, type = "response")) %>%
+  mutate(
+    err       = 5 * (1 - prob),
+    err_lower = 5 * (1 - asymp.UCL),
+    err_upper = 5 * (1 - asymp.LCL)
+  )
+
+emm_err   # model-estimated errors per trial, by condition
+
+# odds ratio for an ERROR (strong vs weak) = OR for a hit (weak vs strong)
+exp(fixef(m1)["crowding_axis1"])
+
 #----participant-level analysis
 data2 <- data_by_participants %>% 
   select(participant, crowding_axis, n_errors.mean) %>%
@@ -211,53 +227,53 @@ p_errors <- ggplot() +
   ) +
   
   scale_y_continuous(breaks = c(0, 0.5, 1, 1.5, 2), limits = c(-0, 2)) +
-  
-  
+
+
   scale_color_manual(values = zone_cols) +
-  
+
   labs(x = "Interference",
        y = "Errors per trial") +
-  
+
   my_plot_theme +
-  
+
   theme(legend.position = "none")
 
 p_errors
 
 
-# model-estimated accuracy (emmeans, back-transformed)
+# model-estimated ERRORS per trial (emmeans, back-transformed to the count scale)
 
-emm_df <- as.data.frame(emmeans(m1, ~ crowding_axis, type = "response"))
-
-p_model <- ggplot(data = emm_df,
+p_model <- ggplot(data = emm_err,
                   aes(x = crowding_axis,
-                      y = prob,
+                      y = err,
                       color = crowding_axis)) +
-  
+
   geom_line(aes(group = 1),
             color = "black",
             linewidth = 1,
             alpha = 0.5) +
-  
+
   geom_point(size = 4,
              alpha = 0.8) +
-  
+
   geom_errorbar(
-    aes(ymin = asymp.LCL,
-        ymax = asymp.UCL),
+    aes(ymin = err_lower,
+        ymax = err_upper),
     width = 0.0,
     linewidth = 1
   ) +
-  
-  scale_y_continuous(breaks = c(0.8, 0.85, 0.9, 0.95), limits = c(0.78, 0.95)) +
-  
+
+  scale_y_continuous(breaks = seq(0.2, 1.2, by = 0.2)) +
+
+  coord_cartesian(ylim = c(0.3, 1.1)) +
+
   scale_color_manual(values = zone_cols) +
-  
+
   labs(x = "Interference",
-       y = "Estimated accuracy") +
-  
+       y = "Estimated errors per trial") +
+
   my_plot_theme +
-  
+
   theme(legend.position = "none")
 
 p_model
